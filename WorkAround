@@ -1,0 +1,70 @@
+### WorkAround ###
+
+
+1. What I’m Going to Do with the Data
+Data Cleaning: Correct data types (e.g., convert Age to INT, DiagnosisDate to DATE), handle missing or invalid values, and standardize categorical fields.
+Data Quality Checks: Identify missing values, invalid entries (e.g., negative TumorSize, illogical dates), and inconsistencies in categorical fields (e.g., Gender, TumorType).
+Deduplication: Check for duplicate PatientID rows and handle them by keeping the most complete or recent record.
+Aggregations: Perform aggregations to summarize patient demographics, treatment patterns, and survival outcomes.
+Insights: Generate insights on cancer stage distribution, treatment effectiveness, survival rates, and correlations with factors like smoking or genetic mutations.
+
+
+2. Insights to Generate
+Demographic Insights: Distribution of patients by Age, Gender, Province, and Ethnicity.
+Cancer Characteristics: Prevalence of TumorType and CancerStage, and their association with Metastasis.
+Treatment Patterns: Frequency of TreatmentType (e.g., Surgery, Chemotherapy) and its correlation with SurvivalStatus.
+Survival Analysis: Survival rates by TumorType, CancerStage, SmokingStatus, and GeneticMutation.
+Risk Factors: Impact of SmokingStatus, AlcoholUse, and Comorbidities on survival outcomes.
+Geographic Trends: Provincial differences in cancer types or survival rates.
+
+
+3. Aggregations and Data Quality Checks
+Aggregations:
+Count patients by TumorType, CancerStage, and SurvivalStatus.
+Average TumorSize and FollowUpMonths by TumorType and CancerStage.
+Count of treatments (Surgery, ChemotherapySessions, RadiationSessions) by TumorType.
+Survival rate (percentage of Alive vs. Deceased) by CancerStage and GeneticMutation.
+Data Quality Checks:
+Check for missing values in critical columns (e.g., PatientID, TumorType, CancerStage).
+Validate numeric fields (e.g., Age, TumorSize, ChemotherapySessions, RadiationSessions) for negative or non-numeric values.
+Ensure dates (DiagnosisDate, SurgeryDate) are valid and logical (e.g., SurgeryDate after DiagnosisDate).
+Check categorical fields (e.g., Gender, SurvivalStatus) for consistency (e.g., unexpected values like “Other” in Gender).
+Identify duplicates based on PatientID.
+
+
+4. Handling Bad Data
+Missing Values:
+For critical columns (e.g., PatientID, TumorType), remove rows if missing, as they’re essential for analysis.
+For non-critical columns (e.g., Comorbidities, GeneticMutation), replace missing values with “None” or a default value, or leave as NULL if appropriate.
+Invalid Data:
+Remove rows with invalid numeric values (e.g., negative Age or TumorSize).
+Correct or remove rows with invalid dates (e.g., SurgeryDate before DiagnosisDate).
+Standardize categorical values (e.g., convert “other” to “Other” in Gender).
+How to Remove:
+Use DELETE or CREATE TABLE AS SELECT to filter out bad data after identifying issues.
+Log removed rows for transparency.
+
+
+5. Handling Duplicates
+Identifying Duplicates: Check for multiple rows with the same PatientID.
+Handling Strategy:
+Keep the row with the most complete data (fewest NULLs) or the most recent DiagnosisDate.
+If identical duplicates exist, keep one row arbitrarily.
+Use a temporary table to store deduplicated data.
+
+
+6. Explanation of Queries
+Create Clean Table: Defines a new table with appropriate data types (e.g., INT for Age, DATE for DiagnosisDate) to ensure data integrity.
+Insert with Cleaning: Converts and validates data during insertion, handling invalid or missing values (e.g., setting invalid Age to NULL, standardizing Gender).
+Duplicate Check: Identifies PatientIDs with multiple rows.
+Deduplication: Uses ROW_NUMBER() to keep the most recent or complete row per PatientID.
+Data Quality Checks: Reports counts of missing or invalid data in critical columns.
+Aggregations: Generates insights like TumorType distribution, average TumorSize, survival rates, and treatment patterns.
+Final Table: Creates a deduplicated, cleaned table for further analysis.
+
+
+Notes
+Bad Data Handling: Rows with missing PatientID or invalid formats are excluded during insertion. Invalid numerics (e.g., negative TumorSize) are set to NULL or default values.
+Duplicates: Deduplication prioritizes recent DiagnosisDate and complete data.
+Scalability: The queries are designed to handle 10,000 rows efficiently, but for very large datasets, consider indexing PatientID.
+Further Steps: You may want to add indexes (e.g., CREATE INDEX idx_patientid ON cancer_patients_final(PatientID);) for performance in subsequent analyses.
